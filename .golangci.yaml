@@ -1,0 +1,149 @@
+version: "2"
+run:
+  modules-download-mode: readonly
+  issues-exit-code: 1
+linters:
+  default: none
+  enable:
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - containedctx
+    - contextcheck
+    - copyloopvar
+    - cyclop
+    - dupl
+    - errcheck
+    - errorlint
+    - exhaustive
+    - funlen
+    - gochecknoglobals
+    - gochecknoinits
+    - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
+    - godot
+    - godox
+    - gosec
+    - govet
+    - importas
+    - ineffassign
+    - lll
+    - maintidx
+    - misspell
+    - mnd
+    - nakedret
+    - nestif
+    - nilerr
+    - nlreturn
+    - noctx
+    - paralleltest
+    - prealloc
+    - predeclared
+    - promlinter
+    - reassign
+    - revive
+    - staticcheck
+    - thelper
+    - unconvert
+    - unparam
+    - unused
+  settings:
+    dupl:
+      threshold: 100
+    errcheck:
+      disable-default-exclusions: true
+      check-type-assertions: true
+      check-blank: true
+    goconst:
+      min-len: 3
+      min-occurrences: 2
+    gocritic:
+      disabled-checks:
+        - regexpMust
+      enabled-tags:
+        - performance
+      settings:
+        captLocal:
+          paramsOnly: true
+        rangeValCopy:
+          sizeThreshold: 32
+    gocyclo:
+      min-complexity: 10
+    govet:
+      enable-all: true
+    lll:
+      line-length: 100
+      tab-width: 1
+    misspell:
+      locale: US
+    nakedret:
+      max-func-lines: 30
+    prealloc:
+      simple: true
+      range-loops: true
+      for-loops: true
+    unparam:
+      check-exported: true
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+issues:
+  max-issues-per-linter: 20
+  max-same-issues: 20
+    # Excluding configuration per-path and per-linter
+    # exclude-rules:
+    # Exclude some linters from running on tests files.
+    # - path: _test\.go
+    #   linters:
+    #     - gocyclo
+    #     - errcheck
+    #     - dupl
+    #     - gosec
+
+    # Ease some gocritic warnings on test files.
+    # - path: _test\.go
+    #   text: "(unnamedResult|exitAfterDefer)"
+    #   linters:
+    #     - gocritic
+
+  # Show only new issues: if there are unstaged changes or untracked files,
+  # only those changes are analyzed, else only changes in HEAD~ are analyzed.
+  # It's a super-useful option for integration of golangci-lint into existing
+  # large codebase. It's not practical to fix all existing issues at the moment
+  # of integration: much better don't allow issues in new code.
+  # Default is false.
+  new: false
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+        - prefix(git.sr.ht/~ritho/rweb)
+      custom-order: true
+    gofmt:
+      simplify: true
+    goimports:
+      local-prefixes:
+        - github.com/i02sopop/go-hiring-challenge-1.2.0
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
