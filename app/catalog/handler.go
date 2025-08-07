@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/mytheresa/go-hiring-challenge/models"
+	"github.com/i02sopop/go-hiring-challenge-1.2.0/models"
 )
 
 type Response struct {

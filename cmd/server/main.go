@@ -10,9 +10,10 @@ import (
 	"syscall"
 
 	"github.com/joho/godotenv"
-	"github.com/mytheresa/go-hiring-challenge/app/catalog"
-	"github.com/mytheresa/go-hiring-challenge/app/database"
-	"github.com/mytheresa/go-hiring-challenge/models"
+
+	"github.com/i02sopop/go-hiring-challenge-1.2.0/app/catalog"
+	"github.com/i02sopop/go-hiring-challenge-1.2.0/app/database"
+	"github.com/i02sopop/go-hiring-challenge-1.2.0/models"
 )
 
 func main() {
