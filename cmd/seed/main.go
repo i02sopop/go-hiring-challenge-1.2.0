@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/i02sopop/go-hiring-challenge-1.2.0/app/database"
+	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/storage/database"
 	"github.com/joho/godotenv"
 )
 
@@ -37,8 +37,6 @@ func main() {
 		os.Exit(-1)
 	}
 
-	defer cleanup(ctx, db)
-
 	// Filter and sort .sql files
 	var sqlFiles []os.DirEntry
 	for _, file := range files {
@@ -66,12 +64,15 @@ func main() {
 			// We are not logging the content in case the query has sensitive data.
 			slog.WarnContext(ctx, "unable to execute the query", "file",
 				file.Name(), "error", err)
+			cleanup(ctx, db)
 
-			return
+			os.Exit(-1)
 		}
 
 		slog.InfoContext(ctx, "query executed properly", "file", file.Name())
 	}
+
+	cleanup(ctx, db)
 }
 
 func cleanup(ctx context.Context, db *database.Database) {

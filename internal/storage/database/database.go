@@ -3,7 +3,6 @@ package database
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 
 	// Postgres driver to connect to the database.
@@ -63,34 +62,18 @@ func (db *Database) Connect() error {
 	return nil
 }
 
-// Session returns the GORM database session.
-func (db *Database) Session() (*gorm.DB, error) {
-	if db.session == nil {
-		return nil, errors.New("no database connection")
-	}
-
-	return db.session, nil
-}
-
-// Connection returns the database connection.
-func (db *Database) Connection() (*sql.DB, error) {
-	if db.conn == nil {
-		return nil, errors.New("no database connection")
-	}
-
-	return db.conn, nil
-}
-
-// Exec a query in the database.
-func (db *Database) Exec(query string, values ...any) *gorm.DB {
-	return db.session.Exec(query, values...)
-}
-
 // Disconnect from the database.
 func (db *Database) Disconnect() error {
 	if db.conn == nil {
 		return nil
 	}
 
-	return db.conn.Close()
+	if err := db.conn.Close(); err != nil {
+		return err
+	}
+
+	db.conn = nil
+	db.session = nil
+
+	return nil
 }

@@ -8,15 +8,15 @@ import (
 	"os"
 	"time"
 
-	"github.com/i02sopop/go-hiring-challenge-1.2.0/app/catalog"
-	"github.com/i02sopop/go-hiring-challenge-1.2.0/app/database"
-	"github.com/i02sopop/go-hiring-challenge-1.2.0/models"
+	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/api/handler/catalog"
+	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/storage/database"
 )
 
 const (
 	readHeaderTimeout = 1 * time.Second
 )
 
+// Server implements the api http server.
 type Server struct {
 	logger  *slog.Logger
 	db      *database.Database
@@ -24,38 +24,37 @@ type Server struct {
 	address string
 }
 
+// NewServer initializes the api server.
 func NewServer(addr string) *Server {
+	db := database.New(os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"),
+		os.Getenv("POSTGRES_DB"), os.Getenv("POSTGRES_PORT"))
+
 	return &Server{
 		address: addr,
 		logger:  slog.Default().With("address", addr),
-		db: database.New(os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"),
-			os.Getenv("POSTGRES_DB"), os.Getenv("POSTGRES_PORT")),
+		db:      db,
 		srv: &http.Server{
 			Addr:              addr,
+			Handler:           router(db),
 			ReadHeaderTimeout: readHeaderTimeout,
 		},
 	}
 }
 
+func router(db *database.Database) http.Handler {
+	cat := catalog.NewHandler(db)
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /catalog", cat.HandleGet)
+
+	return mux
+}
+
+// Start the server.
 func (s *Server) Start(ctx context.Context) error {
 	// Initialize database connection
 	if err := s.db.Connect(); err != nil {
 		return fmt.Errorf("unable to connect to the database: %w", err)
 	}
-
-	dbSession, err := s.db.Session()
-	if err != nil {
-		return fmt.Errorf("unable to obtain the database session: %w", err)
-	}
-
-	// Initialize handlers
-	prodRepo := models.NewProductsRepository(dbSession)
-	cat := catalog.NewHandler(prodRepo)
-
-	// Set up routing
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /catalog", cat.HandleGet)
-	s.srv.Handler = mux
 
 	// Start the server
 	go func() {
@@ -72,15 +71,18 @@ func (s *Server) Start(ctx context.Context) error {
 	return nil
 }
 
+// Stop the server.
 func (s *Server) Stop(ctx context.Context) error {
 	if s.srv == nil {
 		return nil
 	}
 
 	slog.InfoContext(ctx, "Shutting down the server", "server", s.srv)
-	if err := s.db.Disconnect(); err != nil {
+	// We shutdown the API before the database to make sure the database is not
+	// used anymore.
+	if err := s.srv.Shutdown(ctx); err != nil {
 		return err
 	}
 
-	return s.srv.Shutdown(ctx)
+	return s.db.Disconnect()
 }
