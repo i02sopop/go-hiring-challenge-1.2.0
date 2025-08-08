@@ -19,5 +19,6 @@ func (r *ProductsRepository) GetAllProducts() ([]Product, error) {
 	if err := r.db.Preload("Variants").Find(&products).Error; err != nil {
 		return nil, err
 	}
+
 	return products, nil
 }

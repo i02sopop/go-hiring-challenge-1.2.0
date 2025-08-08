@@ -1,26 +1,96 @@
+// Package database implements the logic to connect to a database and run queries.
 package database
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
-	"log"
 
+	// Postgres driver to connect to the database.
 	_ "github.com/lib/pq"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-func New(user, password, dbname, port string) (db *gorm.DB, close func() error) {
-	dsn := fmt.Sprintf("postgres://%s:%s@localhost:%s/%s?sslmode=disable", user, password, port, dbname)
+// Database type to connect to the database.
+type Database struct {
+	session      *gorm.DB
+	conn         *sql.DB
+	user         string
+	password     string
+	port         string
+	databaseName string
+}
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+// New returns a new database object.
+func New(user, password, dbname, port string) *Database {
+	return &Database{
+		user:         user,
+		password:     password,
+		port:         port,
+		databaseName: dbname,
+	}
+}
+
+func (db *Database) newSession() error {
+	dsn := fmt.Sprintf("postgres://%s:%s@localhost:%s/%s?sslmode=disable", db.user,
+		db.password, db.port, db.databaseName)
+	session, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Fatalf("failed to connect database: %s", err)
+		return fmt.Errorf("unable to start the database session: %w", err)
 	}
 
-	sqlDB, err := db.DB()
-	if err != nil {
-		log.Fatalf("Failed to get database connection: %s", err)
+	db.session = session
+
+	return nil
+}
+
+// Connect to the database.
+func (db *Database) Connect() error {
+	if db.session == nil {
+		if err := db.newSession(); err != nil {
+			return err
+		}
 	}
 
-	return db, sqlDB.Close
+	sqlDB, err := db.session.DB()
+	if err != nil {
+		return fmt.Errorf("unable to get the database connection: %w", err)
+	}
+
+	db.conn = sqlDB
+
+	return nil
+}
+
+// Session returns the GORM database session.
+func (db *Database) Session() (*gorm.DB, error) {
+	if db.session == nil {
+		return nil, errors.New("no database connection")
+	}
+
+	return db.session, nil
+}
+
+// Connection returns the database connection.
+func (db *Database) Connection() (*sql.DB, error) {
+	if db.conn == nil {
+		return nil, errors.New("no database connection")
+	}
+
+	return db.conn, nil
+}
+
+// Exec a query in the database.
+func (db *Database) Exec(query string, values ...any) *gorm.DB {
+	return db.session.Exec(query, values...)
+}
+
+// Disconnect from the database.
+func (db *Database) Disconnect() error {
+	if db.conn == nil {
+		return nil
+	}
+
+	return db.conn.Close()
 }

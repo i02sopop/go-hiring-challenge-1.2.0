@@ -3,64 +3,40 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
-	"net/http"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/joho/godotenv"
-
-	"github.com/i02sopop/go-hiring-challenge-1.2.0/app/catalog"
-	"github.com/i02sopop/go-hiring-challenge-1.2.0/app/database"
-	"github.com/i02sopop/go-hiring-challenge-1.2.0/models"
 )
 
 func main() {
+	ctx := context.Background()
+
 	// Load environment variables from .env file
 	if err := godotenv.Load(".env"); err != nil {
-		log.Fatalf("Error loading .env file: %s", err)
+		slog.ErrorContext(ctx, "error loading the environment file", "error", err)
+		os.Exit(-1)
 	}
 
 	// signal handling for graceful shutdown
-	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-	defer stop()
+	ctx, stop := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
+	srv := NewServer(fmt.Sprintf("localhost:%s", os.Getenv("HTTP_PORT")))
+	if err := srv.Start(ctx); err != nil {
+		slog.ErrorContext(ctx, "Unable to start the http server", "error", err)
+		stop()
 
-	// Initialize database connection
-	db, close := database.New(
-		os.Getenv("POSTGRES_USER"),
-		os.Getenv("POSTGRES_PASSWORD"),
-		os.Getenv("POSTGRES_DB"),
-		os.Getenv("POSTGRES_PORT"),
-	)
-	defer close()
-
-	// Initialize handlers
-	prodRepo := models.NewProductsRepository(db)
-	cat := catalog.NewCatalogHandler(prodRepo)
-
-	// Set up routing
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /catalog", cat.HandleGet)
-
-	// Set up the HTTP server
-	srv := &http.Server{
-		Addr:    fmt.Sprintf("localhost:%s", os.Getenv("HTTP_PORT")),
-		Handler: mux,
+		os.Exit(-1)
 	}
 
-	// Start the server
-	go func() {
-		log.Printf("Starting server on http://%s", srv.Addr)
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("Server failed: %s", err)
-		}
-
-		log.Println("Server stopped gracefully")
-	}()
-
 	<-ctx.Done()
-	log.Println("Shutting down server...")
-	srv.Shutdown(ctx)
+	if err := srv.Stop(ctx); err != nil {
+		slog.ErrorContext(ctx, "Unable to shutdown the server", "error", err)
+		stop()
+
+		os.Exit(-1)
+	}
+
 	stop()
 }

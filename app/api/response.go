@@ -4,8 +4,8 @@ import (
 	"net/http"
 )
 
-func OKResponse(w http.ResponseWriter, data any) {
+func OKResponse(_ http.ResponseWriter, _ any) {
 }
 
-func ErrorResponse(w http.ResponseWriter, status int, message string) {
+func ErrorResponse(_ http.ResponseWriter, _ int, _ string) {
 }

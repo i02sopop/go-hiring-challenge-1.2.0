@@ -16,26 +16,28 @@ type Product struct {
 	Price float64 `json:"price"`
 }
 
-type CatalogHandler struct {
+type Handler struct {
 	repo *models.ProductsRepository
 }
 
-func NewCatalogHandler(r *models.ProductsRepository) *CatalogHandler {
-	return &CatalogHandler{
+func NewHandler(r *models.ProductsRepository) *Handler {
+	return &Handler{
 		repo: r,
 	}
 }
 
-func (h *CatalogHandler) HandleGet(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) HandleGet(w http.ResponseWriter, _ *http.Request) {
 	res, err := h.repo.GetAllProducts()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+
 		return
 	}
 
 	// Map response
 	products := make([]Product, len(res))
-	for i, p := range res {
+	for i := range res {
+		p := res[i]
 		products[i] = Product{
 			Code:  p.Code,
 			Price: p.Price.InexactFloat64(),
@@ -51,6 +53,7 @@ func (h *CatalogHandler) HandleGet(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+
 		return
 	}
 }
