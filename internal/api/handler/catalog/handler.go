@@ -5,12 +5,23 @@ package catalog
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/model/product"
 )
 
+const (
+	limitParamName = "limit"
+	defaultLimit   = 10
+
+	offsetParamName = "offset"
+	defaultOffset   = 0
+)
+
 type Response struct {
-	Products []Product `json:"products"`
+	Products    []Product `json:"products"`
+	NumProducts int       `json:"total"`
+	Offset      int       `json:"offset"`
 }
 
 type Product struct {
@@ -21,6 +32,7 @@ type Product struct {
 
 type productsRepository interface {
 	GetAllProducts() ([]product.Product, error)
+	GetProducts(limit, offset int) ([]product.Product, error)
 }
 
 type Handler struct {
@@ -33,8 +45,18 @@ func NewHandler(r productsRepository) *Handler {
 	}
 }
 
-func (h *Handler) HandleGet(w http.ResponseWriter, _ *http.Request) {
-	res, err := h.repo.GetAllProducts()
+func (h *Handler) HandleGet(w http.ResponseWriter, req *http.Request) {
+	limit, err := h.getIntQueryParam(req, limitParamName, defaultLimit)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	offset, err := h.getIntQueryParam(req, offsetParamName, defaultOffset)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	res, err := h.repo.GetProducts(limit, offset)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 
@@ -55,10 +77,28 @@ func (h *Handler) HandleGet(w http.ResponseWriter, _ *http.Request) {
 	// Return the products as a JSON response.
 	w.Header().Set("Content-Type", "application/json")
 	response := Response{
-		Products: products,
+		NumProducts: len(products),
+		Offset:      offset,
+		Products:    products,
 	}
 
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+func (h *Handler) getIntQueryParam(req *http.Request, name string, defaultValue int) (int, error) {
+	params := req.URL.Query()
+	queryParam, ok := params[name]
+	res := defaultValue
+	if ok {
+		l, err := strconv.Atoi(queryParam[0])
+		if err != nil {
+			return res, err
+		}
+
+		res = l
+	}
+
+	return res, nil
 }
