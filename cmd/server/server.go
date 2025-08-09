@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/api/handler/catalog"
-	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/storage/database"
+	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/storage"
 )
 
 const (
@@ -19,30 +18,27 @@ const (
 // Server implements the api http server.
 type Server struct {
 	logger  *slog.Logger
-	db      *database.Database
+	st      storage.Storage
 	srv     *http.Server
 	address string
 }
 
 // NewServer initializes the api server.
-func NewServer(addr string) *Server {
-	db := database.New(os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"),
-		os.Getenv("POSTGRES_DB"), os.Getenv("POSTGRES_PORT"))
-
+func NewServer(addr string, st storage.Storage) *Server {
 	return &Server{
 		address: addr,
 		logger:  slog.Default().With("address", addr),
-		db:      db,
+		st:      st,
 		srv: &http.Server{
 			Addr:              addr,
-			Handler:           router(db),
+			Handler:           router(st),
 			ReadHeaderTimeout: readHeaderTimeout,
 		},
 	}
 }
 
-func router(db *database.Database) http.Handler {
-	cat := catalog.NewHandler(db)
+func router(st storage.Storage) http.Handler {
+	cat := catalog.NewHandler(st)
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /catalog", cat.HandleGet)
 
@@ -52,7 +48,7 @@ func router(db *database.Database) http.Handler {
 // Start the server.
 func (s *Server) Start(ctx context.Context) error {
 	// Initialize database connection
-	if err := s.db.Connect(); err != nil {
+	if err := s.st.Connect(); err != nil {
 		return fmt.Errorf("unable to connect to the database: %w", err)
 	}
 
@@ -84,5 +80,5 @@ func (s *Server) Stop(ctx context.Context) error {
 		return err
 	}
 
-	return s.db.Disconnect()
+	return s.st.Disconnect()
 }

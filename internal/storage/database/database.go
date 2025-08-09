@@ -64,6 +64,10 @@ func (db *Database) Connect() error {
 
 // Disconnect from the database.
 func (db *Database) Disconnect() error {
+	if db == nil {
+		return nil
+	}
+
 	if db.conn == nil {
 		return nil
 	}

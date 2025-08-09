@@ -1,6 +1,7 @@
 package database
 
 import (
+	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/model/category"
 	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/model/product"
 	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/model/variant"
 	"github.com/shopspring/decimal"
@@ -9,6 +10,7 @@ import (
 // Product represents a product in the catalog.
 // It includes a unique code and a price.
 type Product struct {
+	Category Category        `gorm:"foreignKey:ID"`
 	Code     string          `gorm:"uniqueIndex;not null"`
 	Price    decimal.Decimal `gorm:"type:decimal(10,2);not null"`
 	Variants Variants        `gorm:"foreignKey:ProductID"`
@@ -26,6 +28,7 @@ func (p *Product) toModel() *product.Product {
 		Price:    p.Price,
 		Variants: p.Variants.toModel(),
 		ID:       p.ID,
+		Category: p.Category.toModel(),
 	}
 }
 
@@ -72,6 +75,36 @@ func (v Variants) toModel() []variant.Variant {
 	res := make([]variant.Variant, 0, len(v))
 	for i := range v {
 		res = append(res, *v[i].toModel())
+	}
+
+	return res
+}
+
+// Category of a product.
+type Category struct {
+	Code string `gorm:"uniqueIndex;not null"`
+	Name string `gorm:"not null"`
+	ID   uint64 `gorm:"primaryKey"`
+}
+
+func (c *Category) TableName() string {
+	return "categories"
+}
+
+func (c *Category) toModel() *category.Category {
+	return &category.Category{
+		ID:   c.ID,
+		Code: c.Code,
+		Name: c.Name,
+	}
+}
+
+type Categories []Category
+
+func (c Categories) toModel() category.Categories {
+	res := make(category.Categories, 0, len(c))
+	for i := range c {
+		res = append(res, *c[i].toModel())
 	}
 
 	return res

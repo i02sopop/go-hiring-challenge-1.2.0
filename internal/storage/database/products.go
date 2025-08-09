@@ -9,7 +9,7 @@ import (
 // GetAllProducts returns the list of all products stored in the database.
 func (db *Database) GetAllProducts() ([]product.Product, error) {
 	products := make(Products, 0)
-	res := db.session.Preload("Variants").Find(&products)
+	res := db.session.Preload("Variants").Preload("Category").Find(&products)
 	if res.Error != nil {
 		return nil, fmt.Errorf("unable to fetch the products: %w", res.Error)
 	}

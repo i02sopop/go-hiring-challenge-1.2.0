@@ -15,8 +15,8 @@ seed:
 	@go run cmd/seed/main.go
 
 .PHONY: run
-run:
-	@go run cmd/${BIN}/main.go
+run: build
+	@$(PWD)/bin/${BIN}
 
 .PHONY: test
 test:

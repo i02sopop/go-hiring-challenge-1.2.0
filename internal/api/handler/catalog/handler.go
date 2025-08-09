@@ -14,8 +14,9 @@ type Response struct {
 }
 
 type Product struct {
-	Code  string  `json:"code"`
-	Price float64 `json:"price"`
+	Code     string  `json:"code"`
+	Category string  `json:"category"`
+	Price    float64 `json:"price"`
 }
 
 type productsRepository interface {
@@ -45,8 +46,9 @@ func (h *Handler) HandleGet(w http.ResponseWriter, _ *http.Request) {
 	for i := range res {
 		p := res[i]
 		products = append(products, Product{
-			Code:  p.Code,
-			Price: p.Price.InexactFloat64(),
+			Code:     p.Code,
+			Price:    p.Price.InexactFloat64(),
+			Category: p.Category.Name,
 		})
 	}
 
