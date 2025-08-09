@@ -10,11 +10,12 @@ import (
 // Product represents a product in the catalog.
 // It includes a unique code and a price.
 type Product struct {
-	Category Category        `gorm:"foreignKey:ID"`
-	Code     string          `gorm:"uniqueIndex;not null"`
-	Price    decimal.Decimal `gorm:"type:decimal(10,2);not null"`
-	Variants Variants        `gorm:"foreignKey:ProductID"`
-	ID       uint            `gorm:"primaryKey"`
+	Code       string          `gorm:"uniqueIndex;not null"`
+	Price      decimal.Decimal `gorm:"type:decimal(10,2);not null"`
+	Category   Category        `gorm:"foreignKey:CategoryID"`
+	Variants   Variants        `gorm:"foreignKey:ProductID"`
+	CategoryID uint            `gorm:"column:category"`
+	ID         uint            `gorm:"primaryKey"`
 }
 
 // TableName returns the table name for the Products.
@@ -23,6 +24,10 @@ func (p *Product) TableName() string {
 }
 
 func (p *Product) toModel() *product.Product {
+	if p == nil {
+		return nil
+	}
+
 	return &product.Product{
 		Code:     p.Code,
 		Price:    p.Price,
@@ -37,7 +42,10 @@ type Products []Product
 func (p Products) toModel() []product.Product {
 	res := make([]product.Product, 0, len(p))
 	for i := range p {
-		res = append(res, *p[i].toModel())
+		elem := p[i].toModel()
+		if elem != nil {
+			res = append(res, *elem)
+		}
 	}
 
 	return res
@@ -60,6 +68,10 @@ func (v *Variant) TableName() string {
 }
 
 func (v *Variant) toModel() *variant.Variant {
+	if v == nil {
+		return nil
+	}
+
 	return &variant.Variant{
 		Name:      v.Name,
 		SKU:       v.SKU,
@@ -74,7 +86,10 @@ type Variants []Variant
 func (v Variants) toModel() []variant.Variant {
 	res := make([]variant.Variant, 0, len(v))
 	for i := range v {
-		res = append(res, *v[i].toModel())
+		elem := v[i].toModel()
+		if elem != nil {
+			res = append(res, *elem)
+		}
 	}
 
 	return res
@@ -88,10 +103,14 @@ type Category struct {
 }
 
 func (c *Category) TableName() string {
-	return "categories"
+	return "category"
 }
 
 func (c *Category) toModel() *category.Category {
+	if c == nil {
+		return nil
+	}
+
 	return &category.Category{
 		ID:   c.ID,
 		Code: c.Code,
@@ -104,7 +123,10 @@ type Categories []Category
 func (c Categories) toModel() category.Categories {
 	res := make(category.Categories, 0, len(c))
 	for i := range c {
-		res = append(res, *c[i].toModel())
+		elem := c[i].toModel()
+		if elem != nil {
+			res = append(res, *elem)
+		}
 	}
 
 	return res

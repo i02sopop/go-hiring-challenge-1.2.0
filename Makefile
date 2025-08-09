@@ -22,6 +22,10 @@ run: build
 test:
 	@go test -v -count=1 -race ./... -coverprofile=coverage.out -covermode=atomic
 
+.PHONY: test-update
+test-update:
+	@go test -v -count=1 -race ./... -coverprofile=coverage.out -covermode=atomic -tags=update
+
 .PHONY: docker-up
 docker-up:
 	docker compose up -d

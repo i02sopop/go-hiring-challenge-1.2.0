@@ -1,0 +1,42 @@
+{
+    "product": {
+        "category": {
+            "code": "CAT003",
+            "name": "Accessories"
+        },
+        "code": "PROD005",
+        "price": 22.99,
+        "variants": [
+            {
+                "Price": "23.99",
+                "SKU": "SKU005A",
+                "name": "Variant A"
+            },
+            {
+                "Price": "22.99",
+                "SKU": "SKU005B",
+                "name": "Variant B"
+            },
+            {
+                "Price": "22.99",
+                "SKU": "SKU005C",
+                "name": "Variant C"
+            },
+            {
+                "Price": "22.99",
+                "SKU": "SKU005D",
+                "name": "Variant D"
+            },
+            {
+                "Price": "23.49",
+                "SKU": "SKU005E",
+                "name": "Variant E"
+            },
+            {
+                "Price": "22.99",
+                "SKU": "SKU005F",
+                "name": "Variant F"
+            }
+        ]
+    }
+}

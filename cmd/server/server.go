@@ -40,7 +40,8 @@ func NewServer(addr string, st storage.Storage) *Server {
 func router(st storage.Storage) http.Handler {
 	cat := catalog.NewHandler(st)
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /catalog", cat.HandleGet)
+	mux.HandleFunc("GET /catalog", cat.HandleGetProducts)
+	mux.HandleFunc("GET /catalog/{code}", cat.HandleGetProduct)
 
 	return mux
 }

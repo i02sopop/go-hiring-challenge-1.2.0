@@ -15,6 +15,8 @@ type Storage interface {
 	GetAllProducts() ([]product.Product, error)
 	// GetProducts obtains a list of products from the repository with a limit and an offset.
 	GetProducts(limit, offset int, filters ...filter.Filter) ([]product.Product, error)
+	// GetProduct obtains a product from the storage by its code.
+	GetProduct(productCode string) (*product.Product, error)
 	// GetAllCategories gets a list of all the categories stored in the storage.
 	GetAllCategories() (category.Categories, error)
 	// Disconnect from the storage.
