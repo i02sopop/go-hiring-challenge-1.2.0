@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/model/filter"
 	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/model/product"
 )
 
@@ -31,8 +32,8 @@ type Product struct {
 }
 
 type productsRepository interface {
-	GetAllProducts() ([]product.Product, error)
-	GetProducts(limit, offset int) ([]product.Product, error)
+	// GetProducts obtains a list of products from the repository with a limit and an offset.
+	GetProducts(limit, offset int, filters ...filter.Filter) ([]product.Product, error)
 }
 
 type Handler struct {
@@ -56,7 +57,26 @@ func (h *Handler) HandleGet(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
 
-	res, err := h.repo.GetProducts(limit, offset)
+	filters := make([]filter.Filter, 0)
+	cat := h.getQueryParam(req, "category")
+	if cat != "" {
+		filters = append(filters, filter.Filter{
+			Key:       "category",
+			Value:     cat,
+			Operation: filter.Equal,
+		})
+	}
+
+	price := h.getQueryParam(req, "price")
+	if price != "" {
+		filters = append(filters, filter.Filter{
+			Key:       "price",
+			Value:     price,
+			Operation: filter.LessThan,
+		})
+	}
+
+	res, err := h.repo.GetProducts(limit, offset, filters...)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 
@@ -88,17 +108,20 @@ func (h *Handler) HandleGet(w http.ResponseWriter, req *http.Request) {
 }
 
 func (h *Handler) getIntQueryParam(req *http.Request, name string, defaultValue int) (int, error) {
-	params := req.URL.Query()
-	queryParam, ok := params[name]
-	res := defaultValue
-	if ok {
-		l, err := strconv.Atoi(queryParam[0])
-		if err != nil {
-			return res, err
-		}
-
-		res = l
+	param := h.getQueryParam(req, name)
+	if param == "" {
+		return defaultValue, nil
 	}
 
-	return res, nil
+	return strconv.Atoi(param)
+}
+
+func (h *Handler) getQueryParam(req *http.Request, name string) string {
+	params := req.URL.Query()
+	queryParam, ok := params[name]
+	if !ok {
+		return ""
+	}
+
+	return queryParam[0]
 }
