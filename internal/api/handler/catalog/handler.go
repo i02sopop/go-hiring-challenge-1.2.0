@@ -21,6 +21,7 @@ const (
 	defaultOffset   = 0
 )
 
+// Category response from the API.
 type Category struct {
 	Name string `json:"name"`
 	Code string `json:"code"`

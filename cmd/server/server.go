@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/api/handler/catalog"
+	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/api/handler/category"
 	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/storage"
 )
 
@@ -38,10 +39,12 @@ func NewServer(addr string, st storage.Storage) *Server {
 }
 
 func router(st storage.Storage) http.Handler {
-	cat := catalog.NewHandler(st)
+	products := catalog.NewHandler(st)
+	cats := category.NewHandler(st)
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /catalog", cat.HandleGetProducts)
-	mux.HandleFunc("GET /catalog/{code}", cat.HandleGetProduct)
+	mux.HandleFunc("GET /catalog", products.HandleGetProducts)
+	mux.HandleFunc("GET /catalog/{code}", products.HandleGetProduct)
+	mux.HandleFunc("GET /categories", cats.HandleGetCategories)
 
 	return mux
 }
