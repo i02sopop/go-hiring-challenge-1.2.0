@@ -1,0 +1,21 @@
+{
+    "products": [
+        {
+            "code": "CAT001",
+            "name": "Clothing"
+        },
+        {
+            "code": "CAT002",
+            "name": "Shoes"
+        },
+        {
+            "code": "CAT003",
+            "name": "Accessories"
+        },
+        {
+            "code": "test",
+            "name": "test"
+        }
+    ],
+    "total": 4
+}

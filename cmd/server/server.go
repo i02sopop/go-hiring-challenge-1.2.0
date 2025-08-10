@@ -45,6 +45,7 @@ func router(st storage.Storage) http.Handler {
 	mux.HandleFunc("GET /catalog", products.HandleGetProducts)
 	mux.HandleFunc("GET /catalog/{code}", products.HandleGetProduct)
 	mux.HandleFunc("GET /categories", cats.HandleGetCategories)
+	mux.HandleFunc("POST /categories", cats.HandlePostCategories)
 
 	return mux
 }

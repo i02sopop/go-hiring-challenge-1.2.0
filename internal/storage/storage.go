@@ -19,6 +19,8 @@ type Storage interface {
 	GetProduct(productCode string) (*product.Product, error)
 	// GetAllCategories gets a list of all the categories stored in the storage.
 	GetAllCategories() (category.Categories, error)
+	// AddCategory adds a new category to the storage.
+	AddCategory(cat *category.Category) error
 	// Disconnect from the storage.
 	Disconnect() error
 }

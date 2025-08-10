@@ -3,6 +3,7 @@ package category
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/model/category"
@@ -17,6 +18,8 @@ type Category struct {
 type categoryRepository interface {
 	// GetAllCategories gets a list of all the categories stored in the storage.
 	GetAllCategories() (category.Categories, error)
+	// AddCategory adds a new category to the storage.
+	AddCategory(cat *category.Category) error
 }
 
 type Handler struct {
@@ -64,5 +67,29 @@ func (h *Handler) HandleGetCategories(w http.ResponseWriter, req *http.Request) 
 
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+// HandlePostCategories handle the creation of a new category.
+func (h *Handler) HandlePostCategories(w http.ResponseWriter, req *http.Request) {
+	decoder := json.NewDecoder(req.Body)
+	var cat Category
+	err := decoder.Decode(&cat)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+
+		return
+	}
+
+	err = h.repo.AddCategory(&category.Category{
+		Name: cat.Name,
+		Code: cat.Code,
+	})
+	if err != nil {
+		if errors.Is(err, category.ErrInvalidCategory) {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		} else {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 	}
 }

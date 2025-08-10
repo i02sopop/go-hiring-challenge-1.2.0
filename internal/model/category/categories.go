@@ -1,6 +1,10 @@
 // Package category contains the category model.
 package category
 
+import "errors"
+
+var ErrInvalidCategory = errors.New("category not valid")
+
 // Category of a product.
 type Category struct {
 	Code string
