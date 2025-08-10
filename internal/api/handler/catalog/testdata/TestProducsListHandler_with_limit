@@ -1,0 +1,22 @@
+{
+    "offset": 0,
+    "products": [
+        {
+            "category": {
+                "code": "CAT001",
+                "name": "Clothing"
+            },
+            "code": "PROD001",
+            "price": 10.99
+        },
+        {
+            "category": {
+                "code": "CAT002",
+                "name": "Shoes"
+            },
+            "code": "PROD002",
+            "price": 12.49
+        }
+    ],
+    "total": 2
+}

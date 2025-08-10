@@ -1,0 +1,30 @@
+{
+    "offset": 0,
+    "products": [
+        {
+            "category": {
+                "code": "CAT003",
+                "name": "Accessories"
+            },
+            "code": "PROD003",
+            "price": 8.75
+        },
+        {
+            "category": {
+                "code": "CAT002",
+                "name": "Shoes"
+            },
+            "code": "PROD006",
+            "price": 5.5
+        },
+        {
+            "category": {
+                "code": "CAT003",
+                "name": "Accessories"
+            },
+            "code": "PROD008",
+            "price": 9.99
+        }
+    ],
+    "total": 3
+}
