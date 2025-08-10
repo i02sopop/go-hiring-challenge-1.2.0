@@ -1,4 +1,5 @@
-package api
+// Package response defines the api handler responses.
+package response
 
 import (
 	"net/http"

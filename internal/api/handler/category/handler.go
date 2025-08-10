@@ -40,7 +40,7 @@ type CategoriesResponse struct {
 }
 
 // HandleGetCategories handle the get of a list of categories.
-func (h *Handler) HandleGetCategories(w http.ResponseWriter, req *http.Request) {
+func (h *Handler) HandleGetCategories(w http.ResponseWriter, _ *http.Request) {
 	res, err := h.repo.GetAllCategories()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

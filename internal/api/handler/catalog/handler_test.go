@@ -8,11 +8,10 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/storage/database"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
 	"gitlab.com/flimzy/testy"
-
-	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/storage/database"
 )
 
 const (
@@ -21,6 +20,7 @@ const (
 	dbPassword = "password"
 )
 
+// nolint: funlen
 func TestProductDetailsHandler(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
@@ -62,13 +62,23 @@ func TestProductDetailsHandler(t *testing.T) {
 			}
 
 			db := database.New(dbUser, dbPassword, dbName, dbPort.Port())
-			db.Connect()
-			defer db.Disconnect()
+			err = db.Connect()
+			if err != nil {
+				t.Errorf("unable to connect to the database: %s", err)
+				t.FailNow()
+			}
 
-			req, err := http.NewRequest("GET", fmt.Sprintf("/catalog/%s", tc.product), nil)
+			defer func() {
+				err = db.Disconnect()
+				if err != nil {
+					t.Errorf("unable to connect to the database: %s", err)
+					t.FailNow()
+				}
+			}()
+
+			req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("/catalog/%s", tc.product), nil)
 			if err != nil {
 				t.Fatal(err)
-				t.SkipNow()
 			}
 
 			recorder := doRequest(t, db, req)
@@ -89,6 +99,7 @@ func TestProductDetailsHandler(t *testing.T) {
 	}
 }
 
+// nolint: funlen
 func TestProducsListHandler(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
@@ -150,13 +161,23 @@ func TestProducsListHandler(t *testing.T) {
 			}
 
 			db := database.New(dbUser, dbPassword, dbName, dbPort.Port())
-			db.Connect()
-			defer db.Disconnect()
+			err = db.Connect()
+			if err != nil {
+				t.Errorf("unable to connect to the database: %s", err)
+				t.FailNow()
+			}
 
-			req, err := http.NewRequest("GET", tc.request, nil)
+			defer func() {
+				err = db.Disconnect()
+				if err != nil {
+					t.Errorf("unable to connect to the database: %s", err)
+					t.FailNow()
+				}
+			}()
+
+			req, err := http.NewRequestWithContext(ctx, "GET", tc.request, nil)
 			if err != nil {
 				t.Fatal(err)
-				t.SkipNow()
 			}
 
 			recorder := doRequest(t, db, req)

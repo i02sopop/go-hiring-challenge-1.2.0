@@ -9,11 +9,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/storage/database"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
 	"gitlab.com/flimzy/testy"
-
-	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/storage/database"
 )
 
 const (
@@ -22,6 +21,7 @@ const (
 	dbPassword = "password"
 )
 
+// nolint: funlen
 func TestGetHandler(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
@@ -51,18 +51,28 @@ func TestGetHandler(t *testing.T) {
 			}
 
 			db := database.New(dbUser, dbPassword, dbName, dbPort.Port())
-			db.Connect()
-			defer db.Disconnect()
+			err = db.Connect()
+			if err != nil {
+				t.Errorf("unable to connect to the database: %s", err)
+				t.FailNow()
+			}
+
+			defer func() {
+				err = db.Disconnect()
+				if err != nil {
+					t.Errorf("unable to connect to the database: %s", err)
+					t.FailNow()
+				}
+			}()
 
 			cats := NewHandler(db)
 			recorder := httptest.NewRecorder()
 			mux := http.NewServeMux()
 			mux.HandleFunc("GET /categories", cats.HandleGetCategories)
 
-			req, err := http.NewRequest("GET", "/categories", nil)
+			req, err := http.NewRequestWithContext(ctx, "GET", "/categories", nil)
 			if err != nil {
 				t.Fatal(err)
-				t.SkipNow()
 			}
 
 			mux.ServeHTTP(recorder, req)
@@ -83,11 +93,12 @@ func TestGetHandler(t *testing.T) {
 	}
 }
 
+// nolint: funlen, gocognit, gocyclo, cyclop
 func TestPostHandler(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
-		name               string
 		category           io.Reader
+		name               string
 		expectedStatusCode int
 	}{
 		{
@@ -134,13 +145,23 @@ func TestPostHandler(t *testing.T) {
 			}
 
 			db := database.New(dbUser, dbPassword, dbName, dbPort.Port())
-			db.Connect()
-			defer db.Disconnect()
+			err = db.Connect()
+			if err != nil {
+				t.Errorf("unable to connect to the database: %s", err)
+				t.FailNow()
+			}
 
-			req, err := http.NewRequest("GET", "/categories", nil)
+			defer func() {
+				err = db.Disconnect()
+				if err != nil {
+					t.Errorf("unable to connect to the database: %s", err)
+					t.FailNow()
+				}
+			}()
+
+			req, err := http.NewRequestWithContext(ctx, "GET", "/categories", nil)
 			if err != nil {
 				t.Fatal(err)
-				t.SkipNow()
 			}
 
 			recorder := doRequest(t, db, req)
@@ -154,10 +175,9 @@ func TestPostHandler(t *testing.T) {
 				t.Error(d)
 			}
 
-			req, err = http.NewRequest("POST", "/categories", tc.category)
+			req, err = http.NewRequestWithContext(ctx, "POST", "/categories", tc.category)
 			if err != nil {
 				t.Fatal(err)
-				t.SkipNow()
 			}
 
 			recorder = doRequest(t, db, req)
@@ -167,10 +187,9 @@ func TestPostHandler(t *testing.T) {
 				t.FailNow()
 			}
 
-			req, err = http.NewRequest("GET", "/categories", nil)
+			req, err = http.NewRequestWithContext(ctx, "GET", "/categories", nil)
 			if err != nil {
 				t.Fatal(err)
-				t.SkipNow()
 			}
 
 			recorder = doRequest(t, db, req)
