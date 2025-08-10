@@ -4,9 +4,10 @@ package product
 import (
 	"errors"
 
+	"github.com/shopspring/decimal"
+
 	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/model/category"
 	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/model/variant"
-	"github.com/shopspring/decimal"
 )
 
 var ErrNotFound = errors.New("product not found")

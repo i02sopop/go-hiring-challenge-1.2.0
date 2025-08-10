@@ -8,10 +8,11 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/storage/database"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
 	"gitlab.com/flimzy/testy"
+
+	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/storage/database"
 )
 
 const (

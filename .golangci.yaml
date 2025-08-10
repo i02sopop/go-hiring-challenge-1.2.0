@@ -134,7 +134,7 @@ formatters:
       sections:
         - standard
         - default
-        - prefix(git.sr.ht/~ritho/rweb)
+        - prefix(github.com/i02sopop/go-hiring-challenge-1.2.0)
       custom-order: true
     gofmt:
       simplify: true

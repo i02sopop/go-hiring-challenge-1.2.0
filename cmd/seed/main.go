@@ -8,8 +8,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/storage/database"
 	"github.com/joho/godotenv"
+
+	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/storage/database"
 )
 
 func main() {

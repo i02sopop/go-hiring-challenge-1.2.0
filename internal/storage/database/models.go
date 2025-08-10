@@ -1,10 +1,11 @@
 package database
 
 import (
+	"github.com/shopspring/decimal"
+
 	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/model/category"
 	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/model/product"
 	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/model/variant"
-	"github.com/shopspring/decimal"
 )
 
 // Product represents a product in the catalog.

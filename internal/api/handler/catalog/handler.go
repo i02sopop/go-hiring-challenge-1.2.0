@@ -7,10 +7,11 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/shopspring/decimal"
+
 	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/api/response"
 	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/model/filter"
 	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/model/product"
-	"github.com/shopspring/decimal"
 )
 
 const (
