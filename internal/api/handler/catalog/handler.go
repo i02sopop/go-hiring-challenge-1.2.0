@@ -3,11 +3,11 @@
 package catalog
 
 import (
-	"encoding/json"
 	"errors"
 	"net/http"
 	"strconv"
 
+	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/api/response"
 	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/model/filter"
 	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/model/product"
 	"github.com/shopspring/decimal"
@@ -75,15 +75,15 @@ func (h *Handler) HandleGetProduct(w http.ResponseWriter, req *http.Request) {
 	res, err := h.repo.GetProduct(productCode)
 	if err != nil {
 		if errors.Is(err, product.ErrNotFound) {
-			http.Error(w, err.Error(), http.StatusNotFound)
+			response.ErrorResponse(w, http.StatusNotFound, err.Error())
 		} else {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			response.ErrorResponse(w, http.StatusInternalServerError, err.Error())
 		}
 
 		return
 	}
 
-	response := ProductResponse{
+	resp := ProductResponse{
 		Product: Product{
 			Code: res.Code,
 			Category: Category{
@@ -101,16 +101,14 @@ func (h *Handler) HandleGetProduct(w http.ResponseWriter, req *http.Request) {
 			price = res.Price
 		}
 
-		response.Product.Variants = append(response.Product.Variants, Variant{
+		resp.Product.Variants = append(resp.Product.Variants, Variant{
 			Name:  variant.Name,
 			SKU:   variant.SKU,
 			Price: price,
 		})
 	}
 
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+	response.OKResponse(w, resp)
 }
 
 // ProductsResponse defines the API response for the list of product.
@@ -126,12 +124,16 @@ type ProductsResponse struct {
 func (h *Handler) HandleGetProducts(w http.ResponseWriter, req *http.Request) {
 	limit, err := h.getIntQueryParam(req, limitParamName, defaultLimit)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		response.ErrorResponse(w, http.StatusBadRequest, err.Error())
+
+		return
 	}
 
 	offset, err := h.getIntQueryParam(req, offsetParamName, defaultOffset)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		response.ErrorResponse(w, http.StatusBadRequest, err.Error())
+
+		return
 	}
 
 	filters := make([]filter.Filter, 0)
@@ -155,7 +157,7 @@ func (h *Handler) HandleGetProducts(w http.ResponseWriter, req *http.Request) {
 
 	res, err := h.repo.GetProducts(limit, offset, filters...)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		response.ErrorResponse(w, http.StatusInternalServerError, err.Error())
 
 		return
 	}
@@ -174,17 +176,14 @@ func (h *Handler) HandleGetProducts(w http.ResponseWriter, req *http.Request) {
 		})
 	}
 
-	// Return the products as a JSON response.
-	w.Header().Set("Content-Type", "application/json")
-	response := ProductsResponse{
+	// Return the products.
+	resp := ProductsResponse{
 		NumProducts: len(products),
 		Offset:      offset,
 		Products:    products,
 	}
 
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+	response.OKResponse(w, resp)
 }
 
 func (h *Handler) getIntQueryParam(req *http.Request, name string, defaultValue int) (int, error) {

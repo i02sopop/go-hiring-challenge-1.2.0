@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/api/response"
 	"github.com/i02sopop/go-hiring-challenge-1.2.0/internal/model/category"
 )
 
@@ -43,7 +44,7 @@ type CategoriesResponse struct {
 func (h *Handler) HandleGetCategories(w http.ResponseWriter, _ *http.Request) {
 	res, err := h.repo.GetAllCategories()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		response.ErrorResponse(w, http.StatusInternalServerError, err.Error())
 
 		return
 	}
@@ -59,15 +60,12 @@ func (h *Handler) HandleGetCategories(w http.ResponseWriter, _ *http.Request) {
 	}
 
 	// Return the products as a JSON response.
-	w.Header().Set("Content-Type", "application/json")
-	response := CategoriesResponse{
+	resp := CategoriesResponse{
 		NumCategories: len(categories),
 		Categories:    categories,
 	}
 
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+	response.OKResponse(w, resp)
 }
 
 // HandlePostCategories handle the creation of a new category.
@@ -81,15 +79,18 @@ func (h *Handler) HandlePostCategories(w http.ResponseWriter, req *http.Request)
 		return
 	}
 
-	err = h.repo.AddCategory(&category.Category{
+	newCategory := &category.Category{
 		Name: cat.Name,
 		Code: cat.Code,
-	})
+	}
+	err = h.repo.AddCategory(newCategory)
 	if err != nil {
 		if errors.Is(err, category.ErrInvalidCategory) {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			response.ErrorResponse(w, http.StatusBadRequest, err.Error())
 		} else {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			response.ErrorResponse(w, http.StatusInternalServerError, err.Error())
 		}
 	}
+
+	response.OKResponse(w, newCategory)
 }
