@@ -42,10 +42,6 @@ lint:
 lint-fix:
 	@golangci-lint run -c $(PWD)/.golangci.yaml --fix
 
-.PHONY: install
-install: build
-	@install -m 0755 $(PWD)/bin/${BIN} $(HOME)/bin/${BIN}
-
 .PHONY: clean
 clean:
 	@rm -fr ${BIN}* bin cover.out
